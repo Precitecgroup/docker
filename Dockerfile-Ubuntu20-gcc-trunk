@@ -1,0 +1,32 @@
+FROM ubuntu:20.04
+
+RUN groupadd -g 1001 precitec && \
+    useradd -r -u 1001 -g precitec precitec
+
+RUN apt-get update && apt-get install -y make gcc g++ xz-utils cmake
+
+#required for 32bit build
+RUN apt-get update && apt-get install -y gcc-multilib g++-multilib
+
+RUN apt update && apt install software-properties-common -y
+RUN apt update && apt install git flex wget binutils libgmp-dev libmpfr-dev libmpc-dev -y
+
+RUN cd /home && wget https://alpha.gnu.org/gnu/bison/bison-3.7.90.tar.gz && \
+    tar xf bison-3.7.90.tar.gz && \
+    cd bison-3.7.90 && \ 
+    ./configure && \
+    make -j$(nproc) && \
+    make install && \
+    cd /home && rm -rf bison-3.7.90
+
+RUN cd /home && wget https://mirror.netcologne.de/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz && \
+    tar xf gcc-14.2.0.tar.xz && \
+    cd gcc-14.2.0 && \
+    mkdir build && \
+    cd build && \
+    ../configure --enable-multilib && \
+    make -j$(nproc) && \
+    make install && \
+    cd /home && rm -rf gcc-14.2.0
+
+USER precitec
